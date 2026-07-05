@@ -12,6 +12,8 @@ Hot
 
 Hot is macOS menu bar application that displays the CPU speed limit due to thermal issues.
 
+This fork of [macmade/Hot](https://github.com/macmade/Hot) adds **fan control** support.
+
 #### Differences between the Intel and Apple Silicon versions
 
 On an Intel machine, Hot will display the CPU temperature, CPU speed limit (throttling), scheduler limit and number of available CPUs.  
@@ -26,6 +28,27 @@ A graph view for all sensors may also be displayed on Apple Silicon.
 ![Intel Menu](Assets/menu.png "Intel Menu")
 ![Apple Silicon Menu](Assets/menu-arm.png "Apple Silicon Menu")
 ![Sensors](Assets/sensors.png "Sensors")
+
+#### Fan Control
+
+The **Fans** menu displays the live RPM of each fan and lets you either
+leave the fans under automatic system control (recommended), or force them
+to 25%, 50%, 75% or 100% of their supported RPM range.
+
+![Fans Menu](Assets/menu-fans.png "Fans Menu")
+
+Changing fan settings requires an administrator password, as writing to the
+SMC requires root privileges. Manual fan settings are restored to automatic
+control when the app quits, and always reset on reboot.
+
+Note that macOS protects itself regardless of fan settings: even at low
+fan speeds, the machine will throttle before reaching unsafe temperatures.
+
+#### Building this fork
+
+Git submodules have been vendored into the repository, so a plain
+`git clone` (without `--recursive`) is sufficient. Open `Hot.xcodeproj`
+and build the `Hot` scheme.
 
 License
 -------

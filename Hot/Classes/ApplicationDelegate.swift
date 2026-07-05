@@ -125,6 +125,61 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
                 self.detachGraph( nil )
             }
         }
+
+        self.handleDemoMenuIfNeeded()
+    }
+
+    /*
+     * Hidden flag used to produce the README screenshots:
+     * `Hot --demo-menu <main|fans> <output.png>` opens the requested menu,
+     * captures it to the given path, and exits.
+     */
+    private func handleDemoMenuIfNeeded()
+    {
+        let args = ProcessInfo.processInfo.arguments
+
+        guard let index = args.firstIndex( of: "--demo-menu" ), index + 2 < args.count
+        else
+        {
+            return
+        }
+
+        let which = args[ index + 1 ]
+        let path  = args[ index + 2 ]
+
+        DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 8 ) )
+        {
+            guard let menu = which == "fans" ? self.fansMenu : self.menu
+            else
+            {
+                exit( 1 )
+            }
+
+            let timer = Timer( timeInterval: 2, repeats: false )
+            {
+                _ in
+
+                let windows = NSApp.windows.filter
+                {
+                    $0.isVisible && $0.className.lowercased().contains( "menu" )
+                }
+
+                let captured = windows.map
+                {
+                    HotDemoCaptureWindow( UInt32( truncatingIfNeeded: $0.windowNumber ), path )
+                }
+                .contains( true )
+
+                menu.cancelTracking()
+                exit( captured ? 0 : 1 )
+            }
+
+            RunLoop.main.add( timer, forMode: .common )
+
+            let origin = NSPoint( x: 200, y: ( NSScreen.main?.visibleFrame.maxY ?? 800 ) - 4 )
+
+            menu.popUp( positioning: nil, at: origin, in: nil )
+        }
     }
 
     func applicationWillTerminate( _ notification: Notification )

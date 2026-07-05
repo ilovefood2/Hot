@@ -36,8 +36,50 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <CoreGraphics/CoreGraphics.h>
+#import <ImageIO/ImageIO.h>
 
 @import SMCKit;
+
+/*
+ * Captures one of the app's own windows (e.g. an open menu) to a PNG file.
+ * Capturing windows belonging to the current process does not require the
+ * screen-recording permission. Used by the hidden `--demo-menu` flag to
+ * produce the README screenshots.
+ */
+BOOL HotDemoCaptureWindow( uint32_t windowID, NSString * path );
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+BOOL HotDemoCaptureWindow( uint32_t windowID, NSString * path )
+{
+    CGImageRef image = CGWindowListCreateImage( CGRectNull, kCGWindowListOptionIncludingWindow, windowID, kCGWindowImageBoundsIgnoreFraming );
+
+    if( image == NULL )
+    {
+        return NO;
+    }
+
+    NSURL                * url         = [ NSURL fileURLWithPath: path ];
+    CGImageDestinationRef destination  = CGImageDestinationCreateWithURL( ( __bridge CFURLRef )url, ( __bridge CFStringRef )@"public.png", 1, NULL );
+
+    if( destination == NULL )
+    {
+        CGImageRelease( image );
+
+        return NO;
+    }
+
+    CGImageDestinationAddImage( destination, image, NULL );
+
+    BOOL success = CGImageDestinationFinalize( destination ) ? YES : NO;
+
+    CFRelease( destination );
+    CGImageRelease( image );
+
+    return success;
+}
+#pragma clang diagnostic pop
 
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 

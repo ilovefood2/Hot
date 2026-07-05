@@ -23,3 +23,6 @@
  ******************************************************************************/
 
 #import "NSApplication+LaunchServices.h"
+
+/* Defined in FanHelper.m - captures one of the app's own windows to a PNG */
+BOOL HotDemoCaptureWindow( uint32_t windowID, NSString * _Nonnull path );
