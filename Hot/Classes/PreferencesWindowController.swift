@@ -42,6 +42,14 @@ public class PreferencesWindowController: NSWindowController
         }
     }
 
+    @objc public dynamic var displayCPUFrequency = UserDefaults.standard.bool( forKey: "displayCPUFrequency" )
+    {
+        didSet
+        {
+            UserDefaults.standard.setValue( self.displayCPUFrequency, forKey: "displayCPUFrequency" )
+        }
+    }
+
     @objc public dynamic var colorizeStatusItemText = UserDefaults.standard.bool( forKey: "colorizeStatusItemText" )
     {
         didSet

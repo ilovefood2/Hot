@@ -35,6 +35,21 @@
                                     <binding destination="-2" name="value" keyPath="self.displayCPUTemperature" id="6xq-av-dp9"/>
                                 </connections>
                             </button>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Fqz-Ct-b01">
+                                <rect key="frame" x="-2" y="341" width="300" height="18"/>
+                                <buttonCell key="cell" type="check" title="Display the CPU frequency in the menu bar" bezelStyle="regularSquare" imagePosition="left" inset="2" id="Fqz-Ct-c01">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <binding destination="-2" name="value" keyPath="self.displayCPUFrequency" id="Fqz-Ct-b02"/>
+                                    <binding destination="-2" name="hidden" keyPath="self.isAppleSilicon" id="Fqz-Ct-b03">
+                                        <dictionary key="options">
+                                            <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                        </dictionary>
+                                    </binding>
+                                </connections>
+                            </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="228-He-qR8">
                                 <rect key="frame" x="-2" y="310" width="284" height="18"/>
                                 <buttonCell key="cell" type="check" title="Display the scheduler limit in the menu bar" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="r2t-uh-2lL">

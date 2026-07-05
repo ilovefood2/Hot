@@ -746,7 +746,7 @@
         </menu>
         <customObject id="O40-Rx-Vw9" customClass="GitHubUpdater">
             <userDefinedRuntimeAttributes>
-                <userDefinedRuntimeAttribute type="string" keyPath="user" value="macmade"/>
+                <userDefinedRuntimeAttribute type="string" keyPath="user" value="ilovefood2"/>
                 <userDefinedRuntimeAttribute type="string" keyPath="repository" value="Hot"/>
             </userDefinedRuntimeAttributes>
         </customObject>

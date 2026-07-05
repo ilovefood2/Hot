@@ -30,6 +30,8 @@
 		057F8B11251D274C0048F1E1 /* NSApplication+LaunchServices.m in Sources */ = {isa = PBXBuildFile; fileRef = 057F8B10251D274C0048F1E1 /* NSApplication+LaunchServices.m */; };
 		FAC0DE00000000000000A002 /* FanControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC0DE00000000000000A001 /* FanControl.swift */; };
 		FAC0DE00000000000000A004 /* FanHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = FAC0DE00000000000000A003 /* FanHelper.m */; };
+		FAC0DE00000000000000B002 /* CPUFrequency.m in Sources */ = {isa = PBXBuildFile; fileRef = FAC0DE00000000000000B001 /* CPUFrequency.m */; };
+		FAC0DE00000000000000B004 /* CPUFrequencyToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC0DE00000000000000B003 /* CPUFrequencyToString.swift */; };
 		057F8B15251D27650048F1E1 /* AboutWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 057F8B13251D27650048F1E1 /* AboutWindowController.xib */; };
 		057F8B1B251D2A970048F1E1 /* Icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 057F8B1A251D2A970048F1E1 /* Icon.icns */; };
 		057F8B65251D2D5F0048F1E1 /* GitHubUpdates.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 057F8B5C251D2D510048F1E1 /* GitHubUpdates.framework */; };
@@ -128,6 +130,9 @@
 		057F8B10251D274C0048F1E1 /* NSApplication+LaunchServices.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSApplication+LaunchServices.m"; sourceTree = "<group>"; };
 		FAC0DE00000000000000A001 /* FanControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanControl.swift; sourceTree = "<group>"; };
 		FAC0DE00000000000000A003 /* FanHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FanHelper.m; sourceTree = "<group>"; };
+		FAC0DE00000000000000B001 /* CPUFrequency.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPUFrequency.m; sourceTree = "<group>"; };
+		FAC0DE00000000000000B000 /* CPUFrequency.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPUFrequency.h; sourceTree = "<group>"; };
+		FAC0DE00000000000000B003 /* CPUFrequencyToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPUFrequencyToString.swift; sourceTree = "<group>"; };
 		057F8B14251D27650048F1E1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/AboutWindowController.xib; sourceTree = "<group>"; };
 		057F8B1A251D2A970048F1E1 /* Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Icon.icns; sourceTree = "<group>"; };
 		057F8B1E251D2B900048F1E1 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
@@ -427,6 +432,9 @@
 				057F8B10251D274C0048F1E1 /* NSApplication+LaunchServices.m */,
 				FAC0DE00000000000000A001 /* FanControl.swift */,
 				FAC0DE00000000000000A003 /* FanHelper.m */,
+				FAC0DE00000000000000B000 /* CPUFrequency.h */,
+				FAC0DE00000000000000B001 /* CPUFrequency.m */,
+				FAC0DE00000000000000B003 /* CPUFrequencyToString.swift */,
 				055A932825277F990070F771 /* PercentToString.swift */,
 				052FBCA2251EE43B00C4322E /* PreferencesWindowController.swift */,
 				055A932625277F6E0070F771 /* TemperatureToString.swift */,
@@ -608,6 +616,8 @@
 				057F8B11251D274C0048F1E1 /* NSApplication+LaunchServices.m in Sources */,
 				FAC0DE00000000000000A002 /* FanControl.swift in Sources */,
 				FAC0DE00000000000000A004 /* FanHelper.m in Sources */,
+				FAC0DE00000000000000B002 /* CPUFrequency.m in Sources */,
+				FAC0DE00000000000000B004 /* CPUFrequencyToString.swift in Sources */,
 				057F8B0C251D273E0048F1E1 /* AboutWindowController.swift in Sources */,
 				055A9320252778C10070F771 /* InfoViewController.swift in Sources */,
 				05AD458829084FEF00A791C8 /* SelectSensorsWindowController.swift in Sources */,

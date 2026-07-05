@@ -54,6 +54,7 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
     {
         UserDefaults.standard.removeObserver( self, forKeyPath: "displayCPUTemperature" )
         UserDefaults.standard.removeObserver( self, forKeyPath: "displaySchedulerLimit" )
+        UserDefaults.standard.removeObserver( self, forKeyPath: "displayCPUFrequency" )
         UserDefaults.standard.removeObserver( self, forKeyPath: "colorizeStatusItemText" )
         UserDefaults.standard.removeObserver( self, forKeyPath: "convertToFahrenheit" )
         UserDefaults.standard.removeObserver( self, forKeyPath: "hideStatusIcon" )
@@ -95,6 +96,7 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
 
         UserDefaults.standard.addObserver( self, forKeyPath: "displayCPUTemperature",  options: [], context: nil )
         UserDefaults.standard.addObserver( self, forKeyPath: "displaySchedulerLimit",  options: [], context: nil )
+        UserDefaults.standard.addObserver( self, forKeyPath: "displayCPUFrequency",    options: [], context: nil )
         UserDefaults.standard.addObserver( self, forKeyPath: "colorizeStatusItemText", options: [], context: nil )
         UserDefaults.standard.addObserver( self, forKeyPath: "convertToFahrenheit",    options: [], context: nil )
         UserDefaults.standard.addObserver( self, forKeyPath: "hideStatusIcon",         options: [], context: nil )
@@ -127,6 +129,34 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
         }
 
         self.handleDemoMenuIfNeeded()
+        self.handleDemoPrefsIfNeeded()
+    }
+
+    /* Hidden flag: `Hot --demo-prefs <output.png>` captures the Preferences window. */
+    private func handleDemoPrefsIfNeeded()
+    {
+        let args = ProcessInfo.processInfo.arguments
+
+        guard let index = args.firstIndex( of: "--demo-prefs" ), index + 1 < args.count
+        else
+        {
+            return
+        }
+
+        let path = args[ index + 1 ]
+
+        DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 3 ) )
+        {
+            self.showPreferencesWindow( nil )
+
+            DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 2 ) )
+            {
+                let captured = ( self.preferencesWindowController?.window?.windowNumber )
+                    .map { HotDemoCaptureWindow( UInt32( truncatingIfNeeded: $0 ), path ) } ?? false
+
+                exit( captured ? 0 : 1 )
+            }
+        }
     }
 
     /*
@@ -422,6 +452,7 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
             [
                 "displayCPUTemperature",
                 "displaySchedulerLimit",
+                "displayCPUFrequency",
                 "colorizeStatusItemText",
                 "convertToFahrenheit",
                 "hideStatusIcon",
@@ -534,6 +565,14 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
                 n > 0
         {
             title = transformer.transformedValue( n ) as? String ?? "--"
+        }
+
+        if UserDefaults.standard.bool( forKey: "displayCPUFrequency" ),
+           let mhz = self.infoViewController?.cpuFrequency,
+           mhz > 0
+        {
+            let frequency = CPUFrequencyToString().transformedValue( mhz ) as? String ?? "--"
+            title         = title.isEmpty ? frequency : "\( title ) \( frequency )"
         }
 
         if title.count == 0

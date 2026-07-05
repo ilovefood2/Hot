@@ -43,6 +43,22 @@ control when the app quits, and always reset on reboot.
 Note that macOS protects itself regardless of fan settings: even at low
 fan speeds, the machine will throttle before reaching unsafe temperatures.
 
+#### CPU Frequency (Apple Silicon)
+
+Enable **Display the CPU frequency in the menu bar** in the preferences to
+show the live CPU clock speed next to the temperature.
+
+![Preferences](Assets/preferences.png "Preferences")
+
+Apple Silicon exposes no public API or `sysctl` for the current CPU clock, so
+Hot derives it the same way tools like `powermetrics` do: it samples per-core
+P-state residencies through the private `IOReport` framework (resolved at
+runtime, so nothing private is linked) and weights them against the
+per-cluster frequency tables read from the `pmgr` device-tree node. The value
+shown is the average frequency of the cores that were active since the last
+refresh, so it rises toward the cores' maximum under load and drops when the
+machine is idle.
+
 #### Building this fork
 
 Git submodules have been vendored into the repository, so a plain

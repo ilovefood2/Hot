@@ -34,6 +34,7 @@ public class InfoViewController: NSViewController
     @objc public private( set ) dynamic var speedLimit:      Int  = 0
     @objc public private( set ) dynamic var temperature:     Int  = 0
     @objc public private( set ) dynamic var thermalPressure: Int  = 0
+    @objc public private( set ) dynamic var cpuFrequency:    Int  = 0
     @objc public private( set ) dynamic var hasSensors:      Bool = false
 
     public var onUpdate: ( () -> Void )?
@@ -141,6 +142,11 @@ public class InfoViewController: NSViewController
         if let n = self.log.thermalPressure?.intValue
         {
             self.thermalPressure = n
+        }
+
+        if let n = self.log.cpuFrequency?.intValue
+        {
+            self.cpuFrequency = n
         }
 
         if self.speedLimit > 0, self.temperature > 0

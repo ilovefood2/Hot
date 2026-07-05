@@ -33,6 +33,7 @@ public class ThermalLog: NSObject
     @objc public dynamic var speedLimit:      NSNumber?
     @objc public dynamic var temperature:     NSNumber?
     @objc public dynamic var thermalPressure: NSNumber?
+    @objc public dynamic var cpuFrequency:    NSNumber?
     @objc public dynamic var sensors:         [ String: Double ] = [ : ]
 
     private var refreshing = false
@@ -112,6 +113,13 @@ public class ThermalLog: NSObject
 
                 let pressure         = ProcessInfo.processInfo.thermalState
                 self.thermalPressure = NSNumber( integerLiteral: pressure.rawValue )
+
+                let mhz = CPUFrequency.shared.sampleMHz()
+
+                if mhz > 0
+                {
+                    self.cpuFrequency = NSNumber( value: Int( mhz.rounded() ) )
+                }
 
             #endif
 
