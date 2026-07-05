@@ -25,7 +25,6 @@ The menu bar text will be colorized in orange if the pressure is not nominal.
 
 A graph view for all sensors may also be displayed on Apple Silicon.
 
-![Intel Menu](Assets/menu.png "Intel Menu")
 ![Apple Silicon Menu](Assets/menu-arm.png "Apple Silicon Menu")
 ![Sensors](Assets/sensors.png "Sensors")
 
