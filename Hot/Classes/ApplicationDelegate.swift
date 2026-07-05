@@ -37,6 +37,12 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
     private var sensorViewControllers:         [ SensorViewController  ] = []
     private var graphWindowController:         GraphWindowController?
     private var exiting                      = false
+    private var fansMenu:                      NSMenu?
+    private var fanStatusItems:                [ NSMenuItem ] = []
+    private var fanAutoItem:                   NSMenuItem?
+    private var fanPresetItems:                [ NSMenuItem ] = []
+    private var fanApplyInProgress           = false
+    private var fanForcedThisSession         = false
 
     @IBOutlet private var menu:        NSMenu!
     @IBOutlet private var sensorsMenu: NSMenu!
@@ -66,6 +72,7 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
         self.statusItem?.menu                  = self.menu
 
         self.updateMenuFont()
+        self.setupFansMenu()
 
         let infoViewController             = InfoViewController()
         self.infoViewController            = infoViewController
@@ -76,6 +83,7 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
 
             self?.updateTitle()
             self?.updateSensors()
+            self?.updateFansMenu()
 
             self?.graphWindowController?.graphView?.data = self?.infoViewController?.graphView?.data ?? []
             self?.graphWindowController?.schedulerLimit  = self?.infoViewController?.schedulerLimit  ?? 0
@@ -122,6 +130,171 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
     func applicationWillTerminate( _ notification: Notification )
     {
         self.exiting = true
+
+        /*
+         * If manual fan control was enabled during this session, offer to
+         * restore automatic fan management on the way out, so the fans are
+         * not left pinned at a fixed speed with nobody watching them.
+         */
+        if self.fanForcedThisSession, FanControl.fans().contains( where: { $0.manual } )
+        {
+            _ = FanControl.applySynchronously( percent: nil )
+        }
+    }
+
+    private func setupFansMenu()
+    {
+        let fans = FanControl.fans()
+
+        guard fans.isEmpty == false
+        else
+        {
+            return
+        }
+
+        let submenu = NSMenu( title: NSLocalizedString( "Fans", comment: "" ) )
+
+        self.fanStatusItems = fans.map
+        {
+            fan in
+
+            let item       = NSMenuItem( title: "Fan \( fan.index + 1 ): --", action: nil, keyEquivalent: "" )
+            item.isEnabled = false
+
+            submenu.addItem( item )
+
+            return item
+        }
+
+        submenu.addItem( .separator() )
+
+        let auto              = NSMenuItem( title: NSLocalizedString( "Automatic (Recommended)", comment: "" ), action: #selector( self.setFansAuto( _: ) ), keyEquivalent: "" )
+        auto.target           = self
+        self.fanAutoItem      = auto
+
+        submenu.addItem( auto )
+
+        self.fanPresetItems = [ ( 25, "25%" ), ( 50, "50%" ), ( 75, "75%" ), ( 100, NSLocalizedString( "Full Speed", comment: "" ) ) ].map
+        {
+            percent, title in
+
+            let item    = NSMenuItem( title: title, action: #selector( self.setFansPreset( _: ) ), keyEquivalent: "" )
+            item.target = self
+            item.tag    = percent
+
+            submenu.addItem( item )
+
+            return item
+        }
+
+        let fansItem     = NSMenuItem( title: NSLocalizedString( "Fans", comment: "" ), action: nil, keyEquivalent: "" )
+        fansItem.submenu = submenu
+        self.fansMenu    = submenu
+
+        let index = self.menu.items.firstIndex { $0.submenu == self.sensorsMenu } ?? 1
+
+        self.menu.insertItem( fansItem, at: index )
+    }
+
+    private func updateFansMenu()
+    {
+        guard self.fansMenu != nil
+        else
+        {
+            return
+        }
+
+        let fans = FanControl.fans()
+
+        fans.enumerated().forEach
+        {
+            index, fan in
+
+            guard index < self.fanStatusItems.count
+            else
+            {
+                return
+            }
+
+            let mode = fan.manual
+                     ? String( format: NSLocalizedString( "Manual: %.0f RPM", comment: "" ), fan.target )
+                     : NSLocalizedString( "Automatic", comment: "" )
+
+            self.fanStatusItems[ index ].title = "Fan \( fan.index + 1 ): \( Int( fan.rpm ) ) RPM — \( mode )"
+        }
+
+        let anyManual = fans.contains { $0.manual }
+        let percent   = UserDefaults.standard.integer( forKey: "fanControlPercent" )
+
+        self.fanAutoItem?.state = anyManual ? .off : .on
+
+        self.fanPresetItems.forEach
+        {
+            $0.state = anyManual && $0.tag == percent ? .on : .off
+        }
+    }
+
+    @objc
+    private func setFansAuto( _ sender: Any? )
+    {
+        self.applyFans( percent: nil )
+    }
+
+    @objc
+    private func setFansPreset( _ sender: NSMenuItem )
+    {
+        self.applyFans( percent: sender.tag )
+    }
+
+    private func applyFans( percent: Int? )
+    {
+        if self.fanApplyInProgress
+        {
+            NSSound.beep()
+
+            return
+        }
+
+        self.fanApplyInProgress = true
+
+        FanControl.apply( percent: percent )
+        {
+            [ weak self ] error in
+
+            guard let self = self
+            else
+            {
+                return
+            }
+
+            self.fanApplyInProgress = false
+
+            if let error = error
+            {
+                if case FanControl.FanControlError.cancelled = error
+                {
+                    return
+                }
+
+                let alert             = NSAlert()
+                alert.messageText     = NSLocalizedString( "Cannot Change Fan Settings", comment: "" )
+                alert.informativeText = error.localizedDescription
+
+                NSApp.activate( ignoringOtherApps: true )
+                alert.runModal()
+
+                return
+            }
+
+            if let percent = percent
+            {
+                self.fanForcedThisSession = true
+
+                UserDefaults.standard.set( percent, forKey: "fanControlPercent" )
+            }
+
+            self.updateFansMenu()
+        }
     }
 
     private func initializePreferences()

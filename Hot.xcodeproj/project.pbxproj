@@ -28,6 +28,8 @@
 		057F8B00251D22360048F1E1 /* StatusIconTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 057F8AFF251D22360048F1E1 /* StatusIconTemplate.pdf */; };
 		057F8B0C251D273E0048F1E1 /* AboutWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 057F8B0B251D273E0048F1E1 /* AboutWindowController.swift */; };
 		057F8B11251D274C0048F1E1 /* NSApplication+LaunchServices.m in Sources */ = {isa = PBXBuildFile; fileRef = 057F8B10251D274C0048F1E1 /* NSApplication+LaunchServices.m */; };
+		FAC0DE00000000000000A002 /* FanControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC0DE00000000000000A001 /* FanControl.swift */; };
+		FAC0DE00000000000000A004 /* FanHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = FAC0DE00000000000000A003 /* FanHelper.m */; };
 		057F8B15251D27650048F1E1 /* AboutWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 057F8B13251D27650048F1E1 /* AboutWindowController.xib */; };
 		057F8B1B251D2A970048F1E1 /* Icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 057F8B1A251D2A970048F1E1 /* Icon.icns */; };
 		057F8B65251D2D5F0048F1E1 /* GitHubUpdates.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 057F8B5C251D2D510048F1E1 /* GitHubUpdates.framework */; };
@@ -124,6 +126,8 @@
 		057F8B0E251D274C0048F1E1 /* Hot-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Hot-Bridging-Header.h"; sourceTree = "<group>"; };
 		057F8B0F251D274C0048F1E1 /* NSApplication+LaunchServices.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSApplication+LaunchServices.h"; sourceTree = "<group>"; };
 		057F8B10251D274C0048F1E1 /* NSApplication+LaunchServices.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSApplication+LaunchServices.m"; sourceTree = "<group>"; };
+		FAC0DE00000000000000A001 /* FanControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanControl.swift; sourceTree = "<group>"; };
+		FAC0DE00000000000000A003 /* FanHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FanHelper.m; sourceTree = "<group>"; };
 		057F8B14251D27650048F1E1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/AboutWindowController.xib; sourceTree = "<group>"; };
 		057F8B1A251D2A970048F1E1 /* Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Icon.icns; sourceTree = "<group>"; };
 		057F8B1E251D2B900048F1E1 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
@@ -421,6 +425,8 @@
 				05221E8526700772007246FF /* DictionaryIsEmpty.swift */,
 				057F8B0F251D274C0048F1E1 /* NSApplication+LaunchServices.h */,
 				057F8B10251D274C0048F1E1 /* NSApplication+LaunchServices.m */,
+				FAC0DE00000000000000A001 /* FanControl.swift */,
+				FAC0DE00000000000000A003 /* FanHelper.m */,
 				055A932825277F990070F771 /* PercentToString.swift */,
 				052FBCA2251EE43B00C4322E /* PreferencesWindowController.swift */,
 				055A932625277F6E0070F771 /* TemperatureToString.swift */,
@@ -600,6 +606,8 @@
 				055A932B252780FD0070F771 /* GraphView.swift in Sources */,
 				05221E88267009A8007246FF /* SensorViewController.swift in Sources */,
 				057F8B11251D274C0048F1E1 /* NSApplication+LaunchServices.m in Sources */,
+				FAC0DE00000000000000A002 /* FanControl.swift in Sources */,
+				FAC0DE00000000000000A004 /* FanHelper.m in Sources */,
 				057F8B0C251D273E0048F1E1 /* AboutWindowController.swift in Sources */,
 				055A9320252778C10070F771 /* InfoViewController.swift in Sources */,
 				05AD458829084FEF00A791C8 /* SelectSensorsWindowController.swift in Sources */,
