@@ -50,6 +50,27 @@ and `/etc/sudoers.d/hot-fan-control`.
 Note that macOS protects itself regardless of fan settings: even at low
 fan speeds, the machine will throttle before reaching unsafe temperatures.
 
+##### Auto Boost (temperature-driven fan curve)
+
+Instead of a fixed speed, **Auto Boost** drives the fans automatically from a
+temperature curve. Enable it from the **Fans** menu, and open **Fan Profile…**
+to customise it:
+
+![Fan Profile](Assets/fan-profile.png "Fan Profile")
+
+- **Boost sensor** — the temperature the curve reacts to: *CPU Performance
+  Cores*, *CPU Proximity*, or *SoC Die*. Each resolves to the hottest matching
+  sensor on your Mac, falling back to the overall CPU temperature.
+- **Thresholds** — four temperature → fan-speed points. The defaults match a
+  typical curve: start boosting at 58 °C (20 %), 70 °C (45 %), 80 °C (70 %) and
+  90 °C (100 %). Below the first threshold the fans stay on automatic system
+  control; between points the speed is interpolated; above the last point the
+  maximum is held.
+
+Auto Boost runs continuously in the background through the same passwordless
+helper, with hysteresis so it doesn't oscillate around a threshold. It hands
+the fans back to automatic control when disabled or when the app quits.
+
 #### CPU Frequency (Apple Silicon)
 
 Enable **Display the CPU frequency in the menu bar** in the preferences to

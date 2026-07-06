@@ -41,6 +41,8 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
     private var fanStatusItems:                [ NSMenuItem ] = []
     private var fanAutoItem:                   NSMenuItem?
     private var fanPresetItems:                [ NSMenuItem ] = []
+    private var fanAutoBoostItem:              NSMenuItem?
+    private var fanProfileWindowController:    FanProfileWindowController?
     private var fanApplyInProgress           = false
     private var fanForcedThisSession         = false
 
@@ -84,6 +86,7 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
 
             self?.updateTitle()
             self?.updateSensors()
+            self?.evaluateAutoBoost()
             self?.updateFansMenu()
 
             self?.graphWindowController?.graphView?.data = self?.infoViewController?.graphView?.data ?? []
@@ -130,6 +133,34 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
 
         self.handleDemoMenuIfNeeded()
         self.handleDemoPrefsIfNeeded()
+        self.handleDemoFanProfileIfNeeded()
+    }
+
+    /* Hidden flag: `Hot --demo-fanprofile <output.png>` captures the Fan Profile window. */
+    private func handleDemoFanProfileIfNeeded()
+    {
+        let args = ProcessInfo.processInfo.arguments
+
+        guard let index = args.firstIndex( of: "--demo-fanprofile" ), index + 1 < args.count
+        else
+        {
+            return
+        }
+
+        let path = args[ index + 1 ]
+
+        DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 3 ) )
+        {
+            self.showFanProfileWindow( nil )
+
+            DispatchQueue.main.asyncAfter( deadline: .now() + .seconds( 2 ) )
+            {
+                let captured = ( self.fanProfileWindowController?.window?.windowNumber )
+                    .map { HotDemoCaptureWindow( UInt32( truncatingIfNeeded: $0 ), path ) } ?? false
+
+                exit( captured ? 0 : 1 )
+            }
+        }
     }
 
     /* Hidden flag: `Hot --demo-prefs <output.png>` captures the Preferences window. */
@@ -272,6 +303,19 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
             return item
         }
 
+        submenu.addItem( .separator() )
+
+        let autoBoost         = NSMenuItem( title: NSLocalizedString( "Auto Boost", comment: "" ), action: #selector( self.toggleAutoBoost( _: ) ), keyEquivalent: "" )
+        autoBoost.target      = self
+        self.fanAutoBoostItem = autoBoost
+
+        submenu.addItem( autoBoost )
+
+        let profile        = NSMenuItem( title: NSLocalizedString( "Fan Profile…", comment: "" ), action: #selector( self.showFanProfileWindow( _: ) ), keyEquivalent: "" )
+        profile.target     = self
+
+        submenu.addItem( profile )
+
         let fansItem     = NSMenuItem( title: NSLocalizedString( "Fans", comment: "" ), action: nil, keyEquivalent: "" )
         fansItem.submenu = submenu
         self.fansMenu    = submenu
@@ -279,6 +323,13 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
         let index = self.menu.items.firstIndex { $0.submenu == self.sensorsMenu } ?? 1
 
         self.menu.insertItem( fansItem, at: index )
+
+        /* If Auto Boost was left enabled and the helper is authorized, resume
+         * driving the fans right away rather than waiting for the first edit. */
+        if FanCurve.load().enabled, FanControl.isHelperInstalled
+        {
+            self.fanForcedThisSession = true
+        }
     }
 
     private func updateFansMenu()
@@ -308,14 +359,199 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate
             self.fanStatusItems[ index ].title = "Fan \( fan.index + 1 ): \( Int( fan.rpm ) ) RPM — \( mode )"
         }
 
-        let anyManual = fans.contains { $0.manual }
-        let percent   = UserDefaults.standard.integer( forKey: "fanControlPercent" )
+        let anyManual  = fans.contains { $0.manual }
+        let percent    = UserDefaults.standard.integer( forKey: "fanControlPercent" )
+        let autoBoost  = FanCurve.load().enabled
 
-        self.fanAutoItem?.state = anyManual ? .off : .on
+        self.fanAutoBoostItem?.state = autoBoost ? .on : .off
+
+        if autoBoost
+        {
+            let target = FanCurveController.shared.lastTarget
+
+            self.fanAutoBoostItem?.title = target.map
+            {
+                String( format: NSLocalizedString( "Auto Boost — %d%%", comment: "" ), $0 )
+            }
+            ?? NSLocalizedString( "Auto Boost — Automatic", comment: "" )
+        }
+        else
+        {
+            self.fanAutoBoostItem?.title = NSLocalizedString( "Auto Boost", comment: "" )
+        }
+
+        /* While Auto Boost is driving the fans, the manual controls don't apply. */
+        self.fanAutoItem?.isEnabled = autoBoost == false
+        self.fanPresetItems.forEach { $0.isEnabled = autoBoost == false }
+
+        self.fanAutoItem?.state = ( anyManual || autoBoost ) ? .off : .on
 
         self.fanPresetItems.forEach
         {
-            $0.state = anyManual && $0.tag == percent ? .on : .off
+            $0.state = autoBoost == false && anyManual && $0.tag == percent ? .on : .off
+        }
+    }
+
+    private func evaluateAutoBoost()
+    {
+        guard FanCurve.load().enabled
+        else
+        {
+            return
+        }
+
+        let sensors = self.infoViewController?.log.sensors                 ?? [ : ]
+        let cpu      = Double( self.infoViewController?.temperature ?? 0 )
+
+        FanCurveController.shared.evaluate( sensors: sensors, cpuTemperature: cpu )
+    }
+
+    private func currentSensorData() -> ( sensors: [ String: Double ], cpu: Double )
+    {
+        ( self.infoViewController?.log.sensors ?? [ : ], Double( self.infoViewController?.temperature ?? 0 ) )
+    }
+
+    @objc
+    private func toggleAutoBoost( _ sender: Any? )
+    {
+        var curve = FanCurve.load()
+
+        if curve.enabled
+        {
+            curve.enabled = false
+            curve.save()
+
+            FanCurveController.shared.stop()
+            self.updateFansMenu()
+
+            return
+        }
+
+        /* Enabling: make sure the helper is authorized (one-time password),
+         * then start the engine so the fans respond immediately. */
+        if self.fanApplyInProgress
+        {
+            NSSound.beep()
+
+            return
+        }
+
+        self.fanApplyInProgress = true
+
+        FanControl.apply( percent: FanCurveController.shared.lastTarget ?? 0 )
+        {
+            [ weak self ] error in
+
+            guard let self = self
+            else
+            {
+                return
+            }
+
+            self.fanApplyInProgress = false
+
+            if let error = error
+            {
+                if case FanControl.FanControlError.cancelled = error
+                {
+                    return
+                }
+
+                let alert             = NSAlert()
+                alert.messageText     = NSLocalizedString( "Cannot Enable Auto Boost", comment: "" )
+                alert.informativeText = error.localizedDescription
+
+                NSApp.activate( ignoringOtherApps: true )
+                alert.runModal()
+
+                return
+            }
+
+            var curve                 = FanCurve.load()
+            curve.enabled             = true
+            curve.save()
+            self.fanForcedThisSession = true
+
+            let data = self.currentSensorData()
+
+            FanCurveController.shared.start( sensors: data.sensors, cpuTemperature: data.cpu )
+            self.updateFansMenu()
+        }
+    }
+
+    @objc
+    private func showFanProfileWindow( _ sender: Any? )
+    {
+        if self.fanProfileWindowController == nil
+        {
+            let controller = FanProfileWindowController()
+
+            controller.sensorProvider = {
+                [ weak self ] in self?.currentSensorData() ?? ( [ : ], 0 )
+            }
+
+            controller.onEnableRequested =
+            {
+                [ weak self ] completion in
+
+                self?.authorizeAutoBoost( completion: completion )
+            }
+
+            self.fanProfileWindowController = controller
+        }
+
+        guard let window = self.fanProfileWindowController?.window
+        else
+        {
+            NSSound.beep()
+
+            return
+        }
+
+        if window.isVisible == false
+        {
+            window.center()
+        }
+
+        NSApp.activate( ignoringOtherApps: true )
+        self.fanProfileWindowController?.showWindow( sender )
+        window.makeKeyAndOrderFront( sender )
+    }
+
+    /* Ensures the helper is authorized before the profile window enables Auto
+     * Boost; reports success so the window can revert the toggle if declined. */
+    private func authorizeAutoBoost( completion: @escaping ( Bool ) -> Void )
+    {
+        if FanControl.isHelperInstalled
+        {
+            self.fanForcedThisSession = true
+
+            completion( true )
+
+            return
+        }
+
+        FanControl.apply( percent: 0 )
+        {
+            error in
+
+            if let error = error, case FanControl.FanControlError.cancelled = error
+            {
+                completion( false )
+
+                return
+            }
+
+            if error != nil
+            {
+                completion( false )
+
+                return
+            }
+
+            self.fanForcedThisSession = true
+
+            completion( true )
         }
     }
 

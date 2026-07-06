@@ -92,6 +92,26 @@ public class FanControl
         Bundle.main.bundleURL.appendingPathComponent( "Contents/Helpers/hot-fan-helper" ).path
     }
 
+    /* True once the privileged helper has been installed on this machine. */
+    public static var isHelperInstalled: Bool
+    {
+        FileManager.default.fileExists( atPath: self.helperPath )
+    }
+
+    /*
+     * Applies a fan setting only if the helper is already authorized, without
+     * ever prompting or installing. Used by the Auto Boost engine so its
+     * automatic, periodic adjustments never trigger a password dialog.
+     * Returns true if the setting was applied as root.
+     */
+    @discardableResult
+    public static func applyAuthorizedOnly( percent: Int? ) -> Bool
+    {
+        let argument = percent.map { String( $0 ) } ?? "auto"
+
+        return self.runHelperPasswordless( argument: argument ).ranAsRoot
+    }
+
     /*
      * Applies a fan setting through the privileged helper.
      *

@@ -32,6 +32,9 @@
 		FAC0DE00000000000000A004 /* FanHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = FAC0DE00000000000000A003 /* FanHelper.m */; };
 		FAC0DE00000000000000B002 /* CPUFrequency.m in Sources */ = {isa = PBXBuildFile; fileRef = FAC0DE00000000000000B001 /* CPUFrequency.m */; };
 		FAC0DE00000000000000B004 /* CPUFrequencyToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC0DE00000000000000B003 /* CPUFrequencyToString.swift */; };
+		FAC0DE00000000000000D002 /* FanCurve.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC0DE00000000000000D001 /* FanCurve.swift */; };
+		FAC0DE00000000000000D004 /* FanCurveController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC0DE00000000000000D003 /* FanCurveController.swift */; };
+		FAC0DE00000000000000D006 /* FanProfileWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC0DE00000000000000D005 /* FanProfileWindowController.swift */; };
 		057F8B15251D27650048F1E1 /* AboutWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 057F8B13251D27650048F1E1 /* AboutWindowController.xib */; };
 		057F8B1B251D2A970048F1E1 /* Icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 057F8B1A251D2A970048F1E1 /* Icon.icns */; };
 		057F8B65251D2D5F0048F1E1 /* GitHubUpdates.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 057F8B5C251D2D510048F1E1 /* GitHubUpdates.framework */; };
@@ -134,6 +137,9 @@
 		FAC0DE00000000000000B000 /* CPUFrequency.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPUFrequency.h; sourceTree = "<group>"; };
 		FAC0DE00000000000000B003 /* CPUFrequencyToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPUFrequencyToString.swift; sourceTree = "<group>"; };
 		FAC0DE00000000000000C000 /* hot-fan-helper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "hot-fan-helper.m"; sourceTree = "<group>"; };
+		FAC0DE00000000000000D001 /* FanCurve.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanCurve.swift; sourceTree = "<group>"; };
+		FAC0DE00000000000000D003 /* FanCurveController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanCurveController.swift; sourceTree = "<group>"; };
+		FAC0DE00000000000000D005 /* FanProfileWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanProfileWindowController.swift; sourceTree = "<group>"; };
 		057F8B14251D27650048F1E1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/AboutWindowController.xib; sourceTree = "<group>"; };
 		057F8B1A251D2A970048F1E1 /* Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Icon.icns; sourceTree = "<group>"; };
 		057F8B1E251D2B900048F1E1 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
@@ -445,6 +451,9 @@
 				FAC0DE00000000000000B000 /* CPUFrequency.h */,
 				FAC0DE00000000000000B001 /* CPUFrequency.m */,
 				FAC0DE00000000000000B003 /* CPUFrequencyToString.swift */,
+				FAC0DE00000000000000D001 /* FanCurve.swift */,
+				FAC0DE00000000000000D003 /* FanCurveController.swift */,
+				FAC0DE00000000000000D005 /* FanProfileWindowController.swift */,
 				055A932825277F990070F771 /* PercentToString.swift */,
 				052FBCA2251EE43B00C4322E /* PreferencesWindowController.swift */,
 				055A932625277F6E0070F771 /* TemperatureToString.swift */,
@@ -646,6 +655,9 @@
 				FAC0DE00000000000000A004 /* FanHelper.m in Sources */,
 				FAC0DE00000000000000B002 /* CPUFrequency.m in Sources */,
 				FAC0DE00000000000000B004 /* CPUFrequencyToString.swift in Sources */,
+				FAC0DE00000000000000D002 /* FanCurve.swift in Sources */,
+				FAC0DE00000000000000D004 /* FanCurveController.swift in Sources */,
+				FAC0DE00000000000000D006 /* FanProfileWindowController.swift in Sources */,
 				057F8B0C251D273E0048F1E1 /* AboutWindowController.swift in Sources */,
 				055A9320252778C10070F771 /* InfoViewController.swift in Sources */,
 				05AD458829084FEF00A791C8 /* SelectSensorsWindowController.swift in Sources */,
