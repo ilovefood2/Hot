@@ -83,11 +83,23 @@ public class FanControl
         }
     }
 
+    /* Root-owned helper and the passwordless sudoers rule that authorizes it. */
+    private static let helperPath  = "/Library/PrivilegedHelperTools/hot-fan-helper"
+    private static let sudoersPath = "/etc/sudoers.d/hot-fan-control"
+
+    private static var bundledHelperPath: String
+    {
+        Bundle.main.bundleURL.appendingPathComponent( "Contents/Helpers/hot-fan-helper" ).path
+    }
+
     /*
-     * Applies a fan setting by re-executing the app's own binary with the
-     * `--fan-helper` flag through AppleScript's administrator authorization.
-     * Pass nil to restore automatic fan management, or a percentage (0-100)
-     * of the fan's RPM range to force a fixed speed.
+     * Applies a fan setting through the privileged helper.
+     *
+     * The helper runs as root via a passwordless sudoers rule, so once it has
+     * been installed no password is required. The first call (or any call after
+     * the rule was removed) performs a one-time install that prompts for an
+     * administrator password. Pass nil to restore automatic fan management, or
+     * a percentage (0-100) of the fan's RPM range to force a fixed speed.
      */
     public static func apply( percent: Int?, completion: @escaping ( Error? ) -> Void )
     {
@@ -101,15 +113,117 @@ public class FanControl
 
     public static func applySynchronously( percent: Int? ) -> Error?
     {
-        guard let executable = Bundle.main.executablePath
-        else
+        let argument = percent.map { String( $0 ) } ?? "auto"
+
+        /* Fast path: the helper is already authorized, so no prompt appears. */
+        let first = self.runHelperPasswordless( argument: argument )
+
+        if first.ranAsRoot
         {
-            return FanControlError.failed( "Cannot locate the application executable." )
+            return first.error
         }
 
-        let argument = percent.map { String( $0 ) } ?? "auto"
-        let shell    = "\( self.shellQuoted( executable ) ) --fan-helper \( argument )"
-        let script   = "do shell script \( self.appleScriptQuoted( shell ) ) with administrator privileges with prompt \( self.appleScriptQuoted( "Hot needs an administrator password to change fan settings." ) )"
+        /* Not authorized yet - install the helper and sudoers rule (one prompt). */
+        if let installError = self.installHelper()
+        {
+            return installError
+        }
+
+        let second = self.runHelperPasswordless( argument: argument )
+
+        if second.ranAsRoot
+        {
+            return second.error
+        }
+
+        return FanControlError.failed( second.error?.localizedDescription ?? "The fan helper could not be authorized." )
+    }
+
+    /*
+     * Runs the installed helper through `sudo -n` (never prompts). Returns
+     * whether sudo actually executed the helper as root, plus any error the
+     * helper itself reported. If sudo would need a password, ranAsRoot is false.
+     */
+    private static func runHelperPasswordless( argument: String ) -> ( ranAsRoot: Bool, error: Error? )
+    {
+        if FileManager.default.fileExists( atPath: self.helperPath ) == false
+        {
+            return ( false, nil )
+        }
+
+        let process            = Process()
+        let stderrPipe         = Pipe()
+        process.launchPath     = "/usr/bin/sudo"
+        process.arguments      = [ "-n", self.helperPath, argument ]
+        process.standardError  = stderrPipe
+        process.standardOutput = Pipe()
+
+        do
+        {
+            try process.run()
+        }
+        catch
+        {
+            return ( false, error )
+        }
+
+        process.waitUntilExit()
+
+        let data = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+        let text = String( data: data, encoding: .utf8 ) ?? ""
+
+        /* sudo prints its own diagnostics ("sudo: a password is required",
+         * "sudo: a terminal is required", "not allowed") when it declines to
+         * run - meaning the rule is missing and we must (re)install. */
+        if process.terminationStatus != 0, text.contains( "sudo:" )
+        {
+            return ( false, nil )
+        }
+
+        if process.terminationStatus == 0
+        {
+            return ( true, nil )
+        }
+
+        return ( true, FanControlError.failed( text.trimmingCharacters( in: .whitespacesAndNewlines ) ) )
+    }
+
+    /*
+     * One-time privileged install: copies the bundled helper to a root-owned
+     * location and adds a sudoers rule allowing the current user to run only
+     * that helper without a password. Prompts once for an administrator
+     * password via AppleScript.
+     */
+    private static func installHelper() -> Error?
+    {
+        let source = self.bundledHelperPath
+
+        guard FileManager.default.fileExists( atPath: source )
+        else
+        {
+            return FanControlError.failed( "The bundled fan helper is missing from the application." )
+        }
+
+        let user    = NSUserName()
+        let rule     = "\( user ) ALL=(root) NOPASSWD: \( self.helperPath )"
+        let tmpRule  = "\( self.sudoersPath ).new"
+
+        let commands =
+        [
+            "/bin/mkdir -p /Library/PrivilegedHelperTools",
+            "/bin/cp \( self.shellQuoted( source ) ) \( self.shellQuoted( self.helperPath ) )",
+            "/usr/sbin/chown root:wheel \( self.shellQuoted( self.helperPath ) )",
+            "/bin/chmod 755 \( self.shellQuoted( self.helperPath ) )",
+            "/usr/bin/xattr -c \( self.shellQuoted( self.helperPath ) ) || true",
+            "/usr/bin/printf '%s\\n' \( self.shellQuoted( rule ) ) > \( self.shellQuoted( tmpRule ) )",
+            "/usr/sbin/chown root:wheel \( self.shellQuoted( tmpRule ) )",
+            "/bin/chmod 440 \( self.shellQuoted( tmpRule ) )",
+            "/usr/sbin/visudo -cf \( self.shellQuoted( tmpRule ) )",
+            "/bin/mv \( self.shellQuoted( tmpRule ) ) \( self.shellQuoted( self.sudoersPath ) )",
+        ]
+
+        let shell  = "set -e; " + commands.joined( separator: "; " )
+        let script = "do shell script \( self.appleScriptQuoted( shell ) ) with administrator privileges with prompt \( self.appleScriptQuoted( "Hot needs an administrator password once to set up fan control." ) )"
 
         let process            = Process()
         let stderrPipe         = Pipe()

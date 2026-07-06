@@ -36,9 +36,16 @@ to 25%, 50%, 75% or 100% of their supported RPM range.
 
 ![Fans Menu](Assets/menu-fans.png "Fans Menu")
 
-Changing fan settings requires an administrator password, as writing to the
-SMC requires root privileges. Manual fan settings are restored to automatic
-control when the app quits, and always reset on reboot.
+Writing to the SMC requires root privileges. The **first** time you change a
+fan setting, Hot asks for an administrator password once to install a small
+root-owned helper (`/Library/PrivilegedHelperTools/hot-fan-helper`) and a
+scoped `sudoers` rule that authorizes only that helper. After that, changing
+fan speeds — and the automatic restore on quit — no longer prompt for a
+password. Manual fan settings are restored to automatic control when the app
+quits, and always reset on reboot.
+
+To remove the helper later, delete `/Library/PrivilegedHelperTools/hot-fan-helper`
+and `/etc/sudoers.d/hot-fan-control`.
 
 Note that macOS protects itself regardless of fan settings: even at low
 fan speeds, the machine will throttle before reaching unsafe temperatures.

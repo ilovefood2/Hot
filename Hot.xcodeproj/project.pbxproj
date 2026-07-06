@@ -133,6 +133,7 @@
 		FAC0DE00000000000000B001 /* CPUFrequency.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPUFrequency.m; sourceTree = "<group>"; };
 		FAC0DE00000000000000B000 /* CPUFrequency.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPUFrequency.h; sourceTree = "<group>"; };
 		FAC0DE00000000000000B003 /* CPUFrequencyToString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPUFrequencyToString.swift; sourceTree = "<group>"; };
+		FAC0DE00000000000000C000 /* hot-fan-helper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "hot-fan-helper.m"; sourceTree = "<group>"; };
 		057F8B14251D27650048F1E1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/AboutWindowController.xib; sourceTree = "<group>"; };
 		057F8B1A251D2A970048F1E1 /* Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Icon.icns; sourceTree = "<group>"; };
 		057F8B1E251D2B900048F1E1 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
@@ -410,11 +411,20 @@
 			isa = PBXGroup;
 			children = (
 				05AA4088251CF3F400106CEA /* Classes */,
+				FAC0DE00000000000000C010 /* Helper */,
 				05AA4081251CF3D600106CEA /* Hot.entitlements */,
 				05AA4080251CF3D600106CEA /* Info.plist */,
 				05AA4089251CF3FC00106CEA /* UI */,
 			);
 			path = Hot;
+			sourceTree = "<group>";
+		};
+		FAC0DE00000000000000C010 /* Helper */ = {
+			isa = PBXGroup;
+			children = (
+				FAC0DE00000000000000C000 /* hot-fan-helper.m */,
+			);
+			path = Helper;
 			sourceTree = "<group>";
 		};
 		05AA4088251CF3F400106CEA /* Classes */ = {
@@ -473,6 +483,7 @@
 				057F8B69251D2E560048F1E1 /* ShellScript */,
 				05AA4074251CF3D200106CEA /* Resources */,
 				057F8B66251D2D620048F1E1 /* CopyFiles */,
+				FAC0DE00000000000000C001 /* Compile Fan Helper */,
 			);
 			buildRules = (
 			);
@@ -599,6 +610,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "#!/bin/bash\nif [ \"${CONFIGURATION}\" = \"Release\" ]; then\n    plist=\"Hot/Info.plist\"\n    rev=$(git rev-list `git branch | grep -e \"^*\" | cut -d' ' -f 2` | wc -l)\n    /usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $rev\" \"$plist\"\nfi\n";
+		};
+		FAC0DE00000000000000C001 /* Compile Fan Helper */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Hot/Helper/hot-fan-helper.m",
+			);
+			name = "Compile Fan Helper";
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(CONTENTS_FOLDER_PATH)/Helpers/hot-fan-helper",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "set -e\nHELPER_SRC=\"${SRCROOT}/Hot/Helper/hot-fan-helper.m\"\nHELPER_DIR=\"${TARGET_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Helpers\"\nmkdir -p \"${HELPER_DIR}\"\nARCH_FLAGS=\"\"\nfor a in ${ARCHS}; do ARCH_FLAGS=\"${ARCH_FLAGS} -arch ${a}\"; done\nxcrun clang ${ARCH_FLAGS} -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} -fobjc-arc -O2 -framework Foundation -framework IOKit -o \"${HELPER_DIR}/hot-fan-helper\" \"${HELPER_SRC}\"\ncodesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY:--}\" \"${HELPER_DIR}/hot-fan-helper\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
